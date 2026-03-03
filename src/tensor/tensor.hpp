@@ -16,7 +16,7 @@ class Tensor {
 private:
     TensorMeta _meta;
     core::storage_t _storage;
-    size_t _offset;
+    size_t _offset; // Start Index (bytes) of the tensor in the storage
     Tensor(TensorMeta meta, core::storage_t storage, size_t offset = 0);
 
 public:
