@@ -170,7 +170,7 @@ void Tensor::debug() const {
 // First try: Just check the every value in strides
 bool Tensor::isContiguous() const {
     size_t ndim_ = ndim();
-    size_t expected_stride = 1;
+    ptrdiff_t expected_stride = 1;
     const std::vector<ptrdiff_t> strides_ = strides();
     const std::vector<size_t> shape_ = shape();
 
@@ -256,7 +256,7 @@ void Tensor::load(const void *src_) {
     // 1. Calculate the whole size of the tensor
     // 2. Do the memcopy
     size_t dtype_size = elementSize();
-    size_t total_size = numel();
+    size_t total_size = numel() * dtype_size;
     core::context().runtime().api()->memcpy_sync((void *)data(), src_, total_size, LLAISYS_MEMCPY_H2D);
 }
 
