@@ -174,9 +174,7 @@ bool Tensor::isContiguous() const {
     const std::vector<ptrdiff_t> strides_ = strides();
     const std::vector<size_t> shape_ = shape();
 
-    // FIX: There are also 0/1 dimension
-
-    for (size_t i = ndim_ - 1; i >= 0; i--) {
+    for (int i = (int)ndim_ - 1; i >= 0; i--) {
         // If any dimension == 1, then it's stride can be any value (**It's stride has no effect for contiguousity**)
         if (shape_[i] == 1) {
             continue;
@@ -186,7 +184,7 @@ bool Tensor::isContiguous() const {
             return false;
         }
         // Current dimension's stride * Next dimension's stride
-        expected_stride *= shape_[i];
+        expected_stride *= static_cast<ptrdiff_t>(shape_[i]);
     }
 
     return true;
@@ -213,36 +211,45 @@ tensor_t Tensor::permute(const std::vector<size_t> &order) const {
 
 // reshape original tensor to given shape
 tensor_t Tensor::view(const std::vector<size_t> &shape) const {
-    // 1. Create a new tensor and return
+    size_t old_numl = numel();
+    size_t numl = 1;
+    for (auto i : shape) {
+        numl *= i;
+    }
+
+    if (numl != old_numl) {
+        throw std::runtime_error("Invalid view shape");
+    }
+
+    if (!this->isContiguous()) {
+        throw std::runtime_error("The original tensor is not contiguous!");
+    }
 
     TensorMeta meta = _meta;
     meta.shape = shape;
-    Tensor res_tensor = Tensor(meta, _storage);
-    if (!res_tensor.isContiguous()) {
-        throw std::runtime_error("Cannot reshape[view]: tensor is not Contiguous");
+    size_t ndim = shape.size();
+    std::vector<ptrdiff_t> new_strides(ndim);
+    ptrdiff_t stride = 1;
+
+    for (int i = (int)ndim - 1; i >= 0; i--) {
+        new_strides[i] = stride;
+        stride *= shape[i];
     }
 
-    // FIXME: There's a const at the end of the function so...
+    meta.strides = new_strides;
 
-    // 2. return tensor it self
-    // this->_meta.shape = shape;
-    // if (!this.isContiguous()) {
-    //     throw std::runtime_error("Cannot reshape[view]: tensor is not Contiguous");
-    // }
-
-    return std::shared_ptr<Tensor>(&res_tensor);
+    return std::shared_ptr<Tensor>(new Tensor(meta, _storage));
 }
 
 // shape(2, 4) slice(1, 2, 3)
 // Changed: shape & offset
 tensor_t Tensor::slice(size_t dim, size_t start, size_t end) const {
-    std::vector<ptrdiff_t> new_strides(ndim());
-    std::vector<size_t> new_shape(ndim());
+
     TensorMeta meta = _meta;
-
     meta.shape[dim] = end - start;
+    size_t offset = _offset + (start * strides()[dim]) * utils::dsize(dtype());
 
-    return std::shared_ptr<Tensor>(new Tensor(meta, _storage, _offset - start * strides()[dim]));
+    return std::shared_ptr<Tensor>(new Tensor(meta, _storage, offset));
 }
 
 // Load host(cpu) to device

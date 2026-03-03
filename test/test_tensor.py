@@ -16,6 +16,7 @@ def test_tensor():
     llaisys_tensor.load(torch_tensor.data_ptr())
     llaisys_tensor.debug()
     assert llaisys_tensor.is_contiguous() == torch_tensor.is_contiguous()
+    llaisys_tensor.debug()
     assert check_equal(llaisys_tensor, torch_tensor)
 
     # Test view
@@ -40,6 +41,7 @@ def test_tensor():
 
     # Test slice
     print("===Test slice===")
+
     torch_tensor_slice = torch_tensor[:, :, 1:4]
     llaisys_tensor_slice = llaisys_tensor.slice(2, 1, 4)
     llaisys_tensor_slice.debug()
