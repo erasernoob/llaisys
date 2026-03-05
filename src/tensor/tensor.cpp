@@ -272,6 +272,11 @@ tensor_t Tensor::contiguous() const {
     return std::shared_ptr<Tensor>(new Tensor(_meta, _storage));
 }
 
+tensor_t Tensor::transpose() const {
+    TO_BE_IMPLEMENTED();
+    return std::shared_ptr<Tensor>(new Tensor(_meta, _storage));
+}
+
 tensor_t Tensor::reshape(const std::vector<size_t> &shape) const {
     TO_BE_IMPLEMENTED();
     return std::shared_ptr<Tensor>(new Tensor(_meta, _storage));

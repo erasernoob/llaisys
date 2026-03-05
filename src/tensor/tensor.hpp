@@ -53,6 +53,7 @@ public:
 
     // Challenging features
     tensor_t contiguous() const;
+    tensor_t transpose() const;
     tensor_t reshape(const std::vector<size_t> &shape) const;
     tensor_t to(llaisysDeviceType_t device_type, int device = -1) const;
 };
